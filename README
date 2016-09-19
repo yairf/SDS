@@ -1,0 +1,94 @@
+
+
+#----------------------------------------------------------------#
+#  SDS code                                                      #
+#                                                                #
+#  Version: pre-publication release, Sep 19 2016                 #
+#                                                                #
+#  Pre-print:                                                    #
+#    Field, Boyle, Telis, ..., Pritchard                         #
+#    Detection of human adaptation during the past 2,000 years   #
+#    http://biorxiv.org/content/early/2016/05/07/052084          #
+#                                                                #
+#  Contact: Yair Field, yairf@stanford.edu                       #
+#----------------------------------------------------------------#
+
+
+#---------------------------------------#
+#  List of files and their description  #
+#---------------------------------------#
+
+- compute_SDS.R:
+
+	This is the main script to compute SDS, implemented in R.
+
+- Makefile:
+
+	This includes functions to do two things --
+	(1) preparing the gamma-shape parameters file, based on simulations.
+	(2) running compute_SDS.R on the example input files.
+
+- backward.py:
+
+        This python scripts wraps the simuPOP package to simulate allele frequency trajectories.
+
+- example.testsnp:  	 The example input file with info on the test-SNP(s)
+- example.singletons:	 The example input file with info on location of singletons
+- example.observability: The example input file with specification of the "singleton observability" parameters
+- example.boundaries:	 The example input file with specification of the genomic boundaries of interest
+- example.gamma_shapes:	 The example input file with the "gamma-shape" parameters
+- example.output:	 The example output file
+
+
+#-------------------#
+#  Getting started  #
+#-------------------#
+
+
+First, you'll need to change the first line in compute_SDS.R to specify the correct path to 'Rscript' on your computer.
+
+Run "make run_example" to see it running on the example input files.
+
+You'll now need to prepare your input files. Run "compute_SDS.R -h" to see a help text with description of the file formats.
+
+The one file that might take you longer to prepare is the "gamma-shapes" file, because here you'll
+need to run some simulations. This will also require to download/install two simulation programs (ms & simuPOP).
+
+*** For a quick start, I suggest to just use the "example.gamma_shapes" file! ***
+
+The raw SDS will be better calibrated after you do these simulations to get the "gamma shape" estimates that correspond
+to your demographic model; but it will probably result with very similar standardized SDS scores (standardization
+will correct for the model-misspecification frequency-dependent biases). In the next release I plan to add pre-computed
+gamma-shapes files for several demographic models and sample sizes.
+
+To estimate these "gamma-shape" parameters yourself:
+
+ (1) Download Hudson's "ms". Try here: http://home.uchicago.edu/rhudson1/source/mksamples.html
+ (2) Download and install the simuPOP package. Try here: http://simupop.sourceforge.net
+ (3) Modify backward.py:
+     - Change the first line to specify the path to python on your computer.
+     - Run "backward.py -h" to see a help text.
+     - Several demographic models are already implemented. If you want another model you'll need
+       to add a function for it - but it is straightforward (e.g., search "Tennessen_CEU" and follow from there).
+ (4) Modify the Makefile's first lines:
+     - Specify the path to the 'ms' simulation program. 
+     - Set the flag for backward.py to specify your demographic model.
+     - Specify the present effective diploid population size.
+     - Specify the list of derived allele frequencies for which you'd like to simulate the gamma-shape parameters.
+     - Specify the sample size.
+     - Specify the number of simulations.
+ (5) Run "make sim". This will take a few hours to run (assuming ~1000 simulations for several frequencies).
+     You can change the Makefile code to make it run in parallel (e.g., for different frequencies)... 
+
+When you work on genome-wide predictions, it will be useful to run the predictions on different genomic regions in parallel. 
+
+Rememebr that you'll need to standardize the scores within bins of derived allele frequecy. So even if you're interested in
+a single locus, you are advised to predict the raw SDS genome-wide (or at least chromosome-wide) and use that for standardization.
+
+For small samples, many SNPs do not have individuals from all three genotypes. I think this might have an effect on the 
+distribution of raw SDS - and so this should probably be taken into consideration in the standardization step. I'm still
+looking at this, so I don't have yet a clear recommendation for how to do it.
+
+I'll soon release a script to compute SDS for phased (haplotype) data too.
+
+Good luck -- and please email me for questions, suggestions and bug reports.
